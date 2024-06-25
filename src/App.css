@@ -29,11 +29,44 @@
   border: 1px solid black;
 }
 
+.box {
+  border: 1px solid black;
+
+  margin-right: 10px;
+}
 .movie-list {
-  background-color: rgb(26, 141, 101);
+  padding: 10px;
+  background-color: rgb(255, 249, 192);
   border: 1px solid blue;
 }
 
 .movie-item {
   margin-bottom: 10px;
+}
+
+.summary {
+  padding: 2.2rem 3.2rem 1.8rem 3.2rem;
+  border-radius: 0.9rem;
+  background-color: var(--color-background-100);
+  box-shadow: 0 1.2rem 2.4rem rgba(0, 0, 0, 0.2);
+}
+
+.summary h2 {
+  text-transform: uppercase;
+  font-size: 1.6rem;
+  margin-bottom: 0.6rem;
+}
+
+.summary div {
+  display: flex;
+  align-items: center;
+  gap: 2.4rem;
+  font-size: 1.6rem;
+  font-weight: 600;
+}
+
+.summary p {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
 }
