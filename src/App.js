@@ -10,6 +10,14 @@ function App() {
   const [query, setQuery] = useState("");
   const [watchedMovies, setWatchedMovies] = useState([]);
 
+  // function ifWatched(movie) {
+  //   return (
+  //     watchedMovies.find(
+  //       (watchedMovie) => watchedMovie.imdbID === movie.imdbID
+  //     ) !== undefined
+  //   );
+  // }
+
   function handleClickMovie(movie) {
     setSelectedMovie((sel) => (sel?.imdbID === movie.imdbID ? null : movie));
   }
@@ -26,14 +34,29 @@ function App() {
   }
 
   useEffect(() => {
-    console.log("Watched Movies: ", watchedMovies);
-  }, [watchedMovies]);
+    console.log("selectedMovie: ", selectedMovie);
+  }, [selectedMovie]);
+
+  function handleRemoveWatched(movie) {
+    setWatchedMovies((previousWatchedMovies) =>
+      previousWatchedMovies.filter(
+        (watchedMovie) => watchedMovie.imdbID !== movie.imdbID
+      )
+    );
+  }
+
+  // useEffect(() => {
+  //   console.log("Watched Movies: ", watchedMovies);
+  // }, [watchedMovies]);
 
   useEffect(() => {
+    const abortController = new AbortController();
+
     async function fetchData() {
       try {
         const res = await fetch(
-          `http://www.omdbapi.com/?apikey=53f29112&s=${query}`
+          `http://www.omdbapi.com/?apikey=53f29112&s=${query}`,
+          { signal: abortController.signal }
         );
 
         if (!res.ok)
@@ -54,6 +77,10 @@ function App() {
       return;
     }
     fetchData();
+
+    return function () {
+      abortController.abort();
+    };
   }, [query]);
 
   return (
@@ -72,7 +99,10 @@ function App() {
           {selectedMovie === null ? (
             <>
               <WatchedSummary watchedMovies={watchedMovies} />
-              <WatchedList watchedMovies={watchedMovies} />
+              <WatchedList
+                watchedMovies={watchedMovies}
+                onRemoveWatched={handleRemoveWatched}
+              />
             </>
           ) : (
             <MovieDetail
@@ -171,31 +201,54 @@ function WatchedSummary({ watchedMovies }) {
   );
 }
 
-function WatchedList({ watchedMovies }) {
+function WatchedList({ watchedMovies, onRemoveWatched }) {
   return (
     <div className="movie-list">
       {watchedMovies.map((watchedMovie) => (
-        <WatchedItem watchedMovie={watchedMovie} />
+        <>
+          <WatchedItem
+            watchedMovie={watchedMovie}
+            onRemoveWatched={onRemoveWatched}
+          />
+        </>
       ))}
     </div>
   );
 }
 
-function WatchedItem({ watchedMovie }) {
+function WatchedItem({ watchedMovie, onRemoveWatched }) {
   return (
     <div className="movie-item">
       <div>{watchedMovie.Title}</div>
       <div>{watchedMovie.Year}</div>
+      <button onClick={() => onRemoveWatched(watchedMovie)}>remove</button>
     </div>
   );
 }
 
-function MovieDetail({ selectedMovie, onAddToList, onCloseDetail }) {
+function MovieDetail({
+  selectedMovie,
+  onAddToList,
+  onCloseDetail,
+  watchedMovies,
+}) {
   const [selectedMovieWithDetail, setSelectedMovieWithDetial] = useState({});
+  const isWatched = watchedMovies
+    .map((movie) => movie.imdbID)
+    .includes(selectedMovie.imdbID);
 
   function handleAdd() {
     onAddToList(selectedMovie);
   }
+
+  useEffect(() => {
+    if (!selectedMovie) return;
+    document.title = selectedMovie.Title;
+
+    return function () {
+      document.title = "usePopcorn";
+    };
+  }, [selectedMovie]);
 
   useEffect(() => {
     async function fetchBasedOnI() {
@@ -232,11 +285,17 @@ function MovieDetail({ selectedMovie, onAddToList, onCloseDetail }) {
 
       <section>
         <div className="rating">
-          <StarRating maxRating={10} size={24} />
+          {!isWatched ? (
+            <>
+              <StarRating maxRating={10} size={24} />
 
-          <button className="btn-add" onClick={handleAdd}>
-            + Add To List
-          </button>
+              <button className="btn-add" onClick={handleAdd}>
+                + Add To List
+              </button>
+            </>
+          ) : (
+            <button disabled>Watched with rating {selectedMovie.imdbID}</button>
+          )}
 
           <p>
             <em>{selectedMovieWithDetail.Plot}</em>
