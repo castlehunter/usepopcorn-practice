@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 
 const containerStyle = {
@@ -19,6 +19,7 @@ StarRating.propTypes = {
   messages: PropTypes.array,
   className: PropTypes.string,
   onSetRating: PropTypes.func,
+  // rating: PropTypes.number,
 };
 
 export default function StarRating({
@@ -29,13 +30,20 @@ export default function StarRating({
   messages = [],
   defaultRating = 0,
   onSetRating,
+  // rating,
 }) {
-  const [rating, setRating] = useState(defaultRating);
+  const [currentRating, setCurrentRating] = useState(defaultRating);
   const [tempRating, setTempRating] = useState(0);
 
-  function handleRating(rating) {
-    setRating(rating);
-    onSetRating(rating);
+  // useEffect(() => {
+  //   if (rating !== undefined) {
+  //     setCurrentRating(rating);
+  //   }
+  // }, [rating]);
+
+  function handleRating(newRating) {
+    setCurrentRating(newRating);
+    onSetRating(newRating);
   }
 
   const textStyle = {
@@ -52,7 +60,7 @@ export default function StarRating({
           <Star
             key={i}
             onRate={() => handleRating(i + 1)}
-            full={tempRating ? tempRating >= i + 1 : rating >= i + 1}
+            full={tempRating ? tempRating >= i + 1 : currentRating >= i + 1}
             onHoverIn={() => setTempRating(i + 1)}
             onHoverOut={() => setTempRating(0)}
             color={color}
@@ -62,8 +70,8 @@ export default function StarRating({
       </div>
       <p style={textStyle}>
         {messages.length === maxRating
-          ? messages[tempRating ? tempRating - 1 : rating - 1]
-          : tempRating || rating || ""}
+          ? messages[tempRating ? tempRating - 1 : currentRating - 1]
+          : tempRating || currentRating || ""}
       </p>
     </div>
   );
